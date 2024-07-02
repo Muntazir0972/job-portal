@@ -76,7 +76,6 @@
                             .siblings('p')
                             .removeClass('invalid-feedback')
                             .html('')
-
                         }
 
                         if (errors.email) {
