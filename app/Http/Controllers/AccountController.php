@@ -5,9 +5,12 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use App\Models\User;
 use Illuminate\Routing\Route;
 use PhpParser\Node\Stmt\Echo_;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class AccountController extends Controller
 {
@@ -120,6 +123,54 @@ class AccountController extends Controller
     public function logout(){
         Auth::logout();
         return redirect()->route('account.login');
+    }
+
+    public function updateProfilePic(Request $data){
+
+        $id = Auth::user()->id;
+
+        $validator = Validator::make($data->all(),[
+            'image' => 'required|image',
+        ]);
+
+        if ($validator->passes()) {
+            
+            $image = $data->file('image');
+            $ext = $image ->getClientOriginalExtension();
+            $imageName = $id.'-'.time().'.'.$ext;   
+            $image->move(public_path('/profile_pic/'),$imageName);
+
+
+
+            //To create a small thumbnail
+            $sourcePath = public_path('/profile_pic/'.$imageName);
+            $manager = new ImageManager(Driver::class);
+            $image = $manager->read($sourcePath);
+            
+            $image->cover(150,150); 
+            $image->toPng()->save(public_path('/profile_pic/thumb/'.$imageName));
+
+            //Delete old profile pic
+            File::delete(public_path('/profile_pic/thumb/'.Auth::user()->image));
+            File::delete(public_path('/profile_pic/'.Auth::user()->image));
+
+
+        User::where('id',$id)->update(['image' => $imageName]);
+
+        session()->flash('success','Profile Picture Updated Successfully');
+
+        return response()->json([
+            'status' => true,
+            'errors' => []
+        ]);
+
+        } else {
+
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
     }
 
 
