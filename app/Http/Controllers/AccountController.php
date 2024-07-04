@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\Models\User;
+use App\Models\Category;
+use App\Models\Job;
+use App\Models\Job_Type;
 use Illuminate\Routing\Route;
 use PhpParser\Node\Stmt\Echo_;
 use Intervention\Image\ImageManager;
@@ -171,6 +174,68 @@ class AccountController extends Controller
                 'errors' => $validator->errors()
             ]);
         }
+    }
+
+    public function createJob(){
+
+        $categories = Category::orderBy('name','ASC')->where('status',1)->get();
+
+        $jobTypes = Job_Type::orderBy('name','ASC')->where('status',1)->get();
+
+        return view('front.account.job.create',compact('categories','jobTypes'));
+    }
+
+    public function saveJob(Request $data){
+
+        $rules =[
+            'title' => 'required|min:5|max:200',
+            'category' => 'required',
+            'jobType' => 'required',
+            'vacancy' => 'required|integer',
+            'location' => 'required|max:50',
+            'description' => 'required|min:3|max:75',
+            'company_name' => 'required',
+        ];
+
+        $validator = Validator::make($data->all(),$rules);
+
+        if ($validator->passes()) {
+            
+            $job = new Job();
+            $job->title = $data->title;
+            $job->category_id = $data->category;
+            $job->job_type_id = $data->jobType;
+            $job->vacancy = $data->vacancy;
+            $job->salary = $data->salary;
+            $job->location = $data->location;
+            $job->description = $data->description;
+            $job->benefits = $data->benefits;
+            $job->responsibility = $data->responsibility;
+            $job->qualifications = $data->qualifications;
+            $job->keywords = $data->keywords;
+            $job->experience = $data->experience;
+            $job->company_name = $data->company_name;
+            $job->company_location = $data->company_location;
+            $job->company_website = $data->company_website;
+            $job->save();
+
+            session()->flash('success','Job Added Succesfully.');
+
+            return response()->json([
+                'status' => true,
+                'errors' => []
+            ]);
+
+        } else {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
+    }
+
+    public function myJob(){
+        return view('front.account.job.my-jobs');
     }
 
 
