@@ -205,6 +205,7 @@ class AccountController extends Controller
             $job->title = $data->title;
             $job->category_id = $data->category;
             $job->job_type_id = $data->jobType;
+            $job->user_id = Auth::user()->id;
             $job->vacancy = $data->vacancy;
             $job->salary = $data->salary;
             $job->location = $data->location;
@@ -235,7 +236,9 @@ class AccountController extends Controller
     }
 
     public function myJob(){
-        return view('front.account.job.my-jobs');
+
+        $jobs = Job::where('user_id',Auth::user()->id)->with('jobType')->paginate(10);
+        return view('front.account.job.my-jobs',compact('jobs'));
     }
 
 
