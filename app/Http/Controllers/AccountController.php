@@ -241,5 +241,73 @@ class AccountController extends Controller
         return view('front.account.job.my-jobs',compact('jobs'));
     }
 
+    public function editJob(Request $data,$id){
+
+        $categories = Category::orderBy('name','ASC')->where('status',1)->get();
+        $jobTypes = Job_Type::orderBy('name','ASC')->where('status',1)->get();
+
+        $job = Job::where([
+            'user_id' => Auth::user()->id,
+            'id' => $id
+        ])->first();
+
+        if ($job == null) {
+            abort(404);
+        }
+        
+
+        return view('front.account.job.edit',compact('categories','jobTypes','job'));
+    }
+
+    public function updateJob(Request $data,$id){
+
+        $rules =[
+            'title' => 'required|min:5|max:200',
+            'category' => 'required',
+            'jobType' => 'required',
+            'vacancy' => 'required|integer',
+            'location' => 'required|max:50',
+            'description' => 'required|min:3|max:75',
+            'company_name' => 'required',
+        ];
+
+        $validator = Validator::make($data->all(),$rules);
+
+        if ($validator->passes()) {
+            
+            $job = Job::find($id);
+            $job->title = $data->title;
+            $job->category_id = $data->category;
+            $job->job_type_id = $data->jobType;
+            $job->user_id = Auth::user()->id;
+            $job->vacancy = $data->vacancy;
+            $job->salary = $data->salary;
+            $job->location = $data->location;
+            $job->description = $data->description;
+            $job->benefits = $data->benefits;
+            $job->responsibility = $data->responsibility;
+            $job->qualifications = $data->qualifications;
+            $job->keywords = $data->keywords;
+            $job->experience = $data->experience;
+            $job->company_name = $data->company_name;
+            $job->company_location = $data->company_location;
+            $job->company_website = $data->company_website;
+            $job->save();
+
+            session()->flash('success','Job Updated Succesfully.');
+
+            return response()->json([
+                'status' => true,
+                'errors' => []
+            ]);
+
+        } else {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
+    }
+
 
 }
