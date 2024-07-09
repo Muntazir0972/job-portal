@@ -15,6 +15,8 @@ use Illuminate\Routing\Route;
 use PhpParser\Node\Stmt\Echo_;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\JobNotificationEmail;
 
 class JobsController extends Controller
 {
@@ -129,6 +131,17 @@ class JobsController extends Controller
         $application->employer_id = $employer_id;
         $application->applied_date = now();
         $application->save();
+
+        //send notification email to employer
+        $employer = User::where('id',$employer_id)->first();
+        $mailData =[
+            'employer' => $employer,
+            'user' => Auth::user(),
+            'job' => $job,
+        ];
+
+        Mail::to($employer->email)->send(new JobNotificationEmail($mailData));
+
 
         session()->flash('success','You have successfully applied.');
             return response()->json([
