@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Job;
 use App\Models\Job_Type;
+use App\Models\JobApplication;
 use Illuminate\Routing\Route;
 use PhpParser\Node\Stmt\Echo_;
 use Intervention\Image\ImageManager;
@@ -82,7 +83,57 @@ class JobsController extends Controller
             abort(404);
         }
                             
-
         return view('front.jobDetail',compact('job'));
+    }
+
+    public function applyJob(Request $data){
+
+        $id = $data->id;
+        $job = Job::where('id',$id)->first();
+
+        if ($job == null) {
+            session()->flash('error','Job Does not exist');
+            return response()->json([
+                'status' => false,
+                'message' => 'Job does not exist'
+            ]);
+        }
+
+        $employer_id = $job->user_id;
+
+        if ($employer_id == Auth::user()->id) {
+            session()->flash('error','You cannot apply on your own job.');
+            return response()->json([
+                'status' => false,
+                'message' => 'You cannot apply on your own job.'
+            ]);
+        }
+
+        $jobapplicationCount = JobApplication::where([
+            'user_id' => Auth::user()->id,
+            'job_id' => $id
+        ])->count();
+
+            if ($jobapplicationCount > 0) {
+                $message = 'You have already applied on this job.';
+                session()->flash('error',$message);
+                return response()->json([
+                    'status' => false,
+                    'message' => $message
+                ]);                
+            }
+
+        $application = new JobApplication();
+        $application->job_id = $id;
+        $application->user_id = Auth::user()->id;
+        $application->employer_id = $employer_id;
+        $application->applied_date = now();
+        $application->save();
+
+        session()->flash('success','You have successfully applied.');
+            return response()->json([
+                'status' => true,
+                'message' => 'You have successfully applied.'
+            ]);
     }
 }
