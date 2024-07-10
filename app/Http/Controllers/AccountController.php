@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Job;
 use App\Models\Job_Type;
+use App\Models\JobApplication;
 use Illuminate\Routing\Route;
 use PhpParser\Node\Stmt\Echo_;
 use Intervention\Image\ImageManager;
@@ -328,7 +329,36 @@ class AccountController extends Controller
             return response()->json([
                 'status' => true,
             ]);
+    
     }
 
+    public function myJobApplications(){
+
+       $jobApplications =  JobApplication::where('user_id',Auth::user()->id)->with('job','job.jobType','job.applications')->paginate(10);
+
+        return view('front.account.job.my-job-applications',compact('jobApplications'));
+    }   
+
+    public function removeJobs(Request $data){
+
+       $jobApplication =  JobApplication::where([
+                        'id' => $data->id,
+                        'user_id' => Auth::user()->id])
+                        ->first(); 
+
+        if ($jobApplication == null) {
+            session()->flash('error','Job Application not found');
+            return response()->json([
+                'status' => false,
+            ]);
+        }
+        
+     JobApplication::find($data->id)->delete();
+     session()->flash('success','Job application removed successfully');
+            return response()->json([
+                'status' => true,
+            ]);
+        
+    }
 
 }
