@@ -17,6 +17,7 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\JobNotificationEmail;
+use App\Models\SavedJobs;
 
 class JobsController extends Controller
 {
@@ -42,7 +43,7 @@ class JobsController extends Controller
             $jobs = $jobs->where('location',$data->location);
         }
 
-        //search using location
+        //search =>  using location
         if (!empty($data->category)) {
                 $jobs = $jobs->where('category_id',$data->category);
         }
@@ -84,8 +85,14 @@ class JobsController extends Controller
         if ($job == null) {
             abort(404);
         }
+
+        //check if user already saved job
+        $count = SavedJobs::where([
+            'user_id' => Auth::user()->id,
+            'job_id' => $id, 
+        ])->count();
                             
-        return view('front.jobDetail',compact('job'));
+        return view('front.jobDetail',compact('job','count'));
     }
 
     public function applyJob(Request $data){
@@ -149,4 +156,44 @@ class JobsController extends Controller
                 'message' => 'You have successfully applied.'
             ]);
     }
+
+     public function saveJob(Request $data){
+
+        $id = $data->id;
+        $job = Job::find($id);
+
+        if ($job == null) {
+            session()->flash('error','Job not found');
+
+            return response()->json([
+                'status' => false,
+            ]);
+        }
+
+        //check if user already saved job
+        $count = SavedJobs::where([
+            'user_id' => Auth::user()->id,
+            'job_id' => $id, 
+        ])->count();
+
+        if ($count > 0) {
+            session()->flash('error','You have already saved this job.');
+
+            return response()->json([
+                'status' => false,
+            ]);
+        }
+
+        $savedJob = new SavedJobs();
+        $savedJob->job_id = $id;
+        $savedJob->user_id = Auth::user()->id;
+        $savedJob->save(); 
+
+        session()->flash('success','Job saved');
+
+        return response()->json([
+            'status' => true,
+        ]);
+    }
+
 }
