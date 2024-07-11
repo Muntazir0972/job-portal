@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Job;
 use App\Models\Job_Type;
 use App\Models\JobApplication;
+use App\Models\SavedJobs;
 use Illuminate\Routing\Route;
 use PhpParser\Node\Stmt\Echo_;
 use Intervention\Image\ImageManager;
@@ -334,7 +335,10 @@ class AccountController extends Controller
 
     public function myJobApplications(){
 
-       $jobApplications =  JobApplication::where('user_id',Auth::user()->id)->with('job','job.jobType','job.applications')->paginate(10);
+       $jobApplications =  JobApplication::where('user_id',Auth::user()->id)
+       ->with('job','job.jobType','job.applications')
+       ->orderBy('created_at','DESC')
+       ->paginate(10);
 
         return view('front.account.job.my-job-applications',compact('jobApplications'));
     }   
@@ -360,5 +364,40 @@ class AccountController extends Controller
             ]);
         
     }
+
+    public function savedJobs(){
+
+        // $jobApplications =  JobApplication::where('user_id',Auth::user()->id)->with('job','job.jobType','job.applications')->paginate(10);
+
+        $savedJobs = SavedJobs::where([
+            'user_id' => Auth::user()->id
+        ])->with('job','job.jobType','job.applications')
+        ->orderBy('created_at','DESC')
+        ->paginate(10);
+
+        return view('front.account.job.saved-jobs',compact('savedJobs'));
+    }
+
+    public function removeSavedJob(Request $data){
+
+        $savedJob =  SavedJobs::where([
+                         'id' => $data->id,
+                         'user_id' => Auth::user()->id])
+                         ->first(); 
+ 
+         if ($savedJob == null) {
+             session()->flash('error','Job not found');
+             return response()->json([
+                 'status' => false,
+             ]);
+         }
+         
+         SavedJobs::find($data->id)->delete();
+      session()->flash('success','Job removed successfully');
+             return response()->json([
+                 'status' => true,
+             ]);
+         
+     }
 
 }
