@@ -49,7 +49,7 @@
                                         <td>
                                             <div class="job-name fw-500">{{ $user->name }}</div>
                                         </td>
-                                        <td>{{ $user->email }} </td>
+                                         <td>{{ $user->email }} </td>
                                         <td>{{ $user->mobile }} </td>
                                         <td>
                                             <div class="action-dots">
@@ -58,7 +58,7 @@
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end">
                                                     <li><a class="dropdown-item" href="{{ route('admin.users.edit',$user->id) }}"><i class="fa fa-edit" aria-hidden="true"></i> Edit</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fa fa-trash" aria-hidden="true"></i> Delete</a></li>
+                                                    <li><a class="dropdown-item"  onclick="deleteUser({{ $user->id }})"><i class="fa fa-trash" aria-hidden="true"></i> Delete</a></li>
                                                 </ul>
                                             </div>
                                         </td>
@@ -81,5 +81,19 @@
 @endsection
 
 @section('customJs')
-
+<script type="text/javascript">
+    function deleteUser(id){
+       if (confirm("Are you sure you want to delete")) {
+        $.ajax({
+            url:'{{ route("admin.users.destroy") }}',
+            type:'delete',
+            data:{id:id },
+            dataType:'json',
+            success:function(response){
+                window.location.href = "{{ route('admin.users') }}";
+            }
+        });
+       }
+    }
+</script>
 @endsection
