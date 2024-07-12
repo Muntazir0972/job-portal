@@ -25,4 +25,42 @@ class UserController extends Controller
         $users = User::orderBy('created_at','DESC')->paginate(10);
         return view('admin.users.list',compact('users'));
     }
+
+    public function edit($id){
+
+        $user = User::findOrFail($id);
+        return view('admin.users.edit',compact('user'));
+    }
+
+    public function updateUser($id,Request $data){
+    
+
+        $validator = Validator::make($data->all(),[
+            'name' => 'required|min:5|max:20',
+            'email' => 'required|email|unique:users,email,'.$id.',id'
+        ]);
+
+        if ($validator->passes()) {
+            
+            $user = User::find($id);
+            $user->name = $data->name;
+            $user->email = $data->email;
+            $user->mobile = $data->mobile;
+            $user->designation = $data->designation;
+            $user->save();
+
+            session()->flash('success','User information Updated Succesfully');
+
+            return response()->json([
+                'status' => true,
+                'errors' => []
+            ]);
+
+        }else{
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
+    }
 }
