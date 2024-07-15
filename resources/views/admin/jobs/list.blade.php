@@ -36,6 +36,7 @@
                                         <th scope="col">ID</th>
                                         <th scope="col">Title</th>
                                         <th scope="col">Posted By</th>
+                                        <th scope="col">Status</th>
                                         <th scope="col">Date</th>
                                         <th scope="col">Action</th>
                                     </tr>
@@ -52,6 +53,16 @@
                                                 </td>
 
                                                 <td>{{ $job->user->name }}</td>
+
+                                                <td>
+                                                    @if ($job->status == 1)
+                                                        <span class="text-success">Active</span>
+                                                    @else
+                                                        <span class="text-danger">Blocked</span>
+                                                    @endif
+
+                                                </td>
+
                                                 <td>{{ ($job->created_at)->format('d M,Y') }}</td>
                                                 <td>
                                                     <div class="action-dots">
