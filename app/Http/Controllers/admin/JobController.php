@@ -87,6 +87,26 @@ class JobController extends Controller
            'errors' => $validator->errors()
        ]);
    }
+
+}
+
+public function destroy(Request $data){
+   $id = $data->id;
+
+   $job = Job::find($id);
+
+   if ($job == null) {
+      session()->flash('error','Either job deleted or not found');
+      return response()->json([
+         'status'=>false,
+      ]);
+   }
+
+   $job->delete();
+   session()->flash('success','Job deleted successfully');
+   return response()->json([
+      'status'=>true,
+   ]);
 }
 
 
