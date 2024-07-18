@@ -81,18 +81,19 @@
 
 @section('customJs')
 <script type="text/javascript">
-    // function deleteJob(id){
-    //    if (confirm("Are you sure you want to delete")) {
-    //     $.ajax({
-    //         url:'{{ route("admin.jobs.destroy") }}',
-    //         type:'delete',
-    //         data:{id:id },
-    //         dataType:'json',
-    //         success:function(response){
-    //             window.location.href = "{{ route('admin.jobs') }}";
-    //         }
-    //     });
-    //    }
-    // }
+    function deleteJobApplication(id){
+       if (confirm("Are you sure you want to delete")) {
+        $.ajax({
+            url:'{{ route("admin.jobapplications.destroy") }}',
+            type:'delete',
+            data:{ id:id },
+            dataType:'json',
+            success:function(response){
+                window.location.href = "{{ route('admin.jobapplications') }}";
+            }
+        });
+       }
+    }
+
 </script>
 @endsection

@@ -28,5 +28,24 @@ class JobApplicationController extends Controller
                                         ->paginate(10);
 
         return view('admin.job-applications.list',compact('applications'));
-    }   
+    }
+    
+    public function destroy(Request $data){
+        $id = $data->id;
+
+        $jobApplication = JobApplication::find($id);
+
+        if ($jobApplication == null) {
+            session()->flash('error','Either job application deleted or not found.');
+            return response()->json([
+                'status' => false,
+            ]);
+        }
+
+        $jobApplication->delete();
+        session()->flash('success','Job Application deleted successfully.');
+            return response()->json([
+                'status' => true,
+            ]);
+    }
 }
